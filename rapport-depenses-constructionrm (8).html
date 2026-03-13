@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Rapport de dépenses – Construction RM</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+:root {
+  --navy:#0d1b2a; --navy-mid:#162236; --navy-light:#1e3252;
+  --gold:#c9a84c; --gold-light:#e2c47a; --gold-pale:#f5e9c8;
+  --white:#ffffff; --off-white:#f7f5f0;
+  --text-muted:#8899aa; --error:#e05c5c; --success:#4caf82;
+  --border:rgba(201,168,76,0.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;padding-bottom:40px}
+
+.header{background:linear-gradient(160deg,var(--navy-light)0%,var(--navy)100%);border-bottom:2px solid var(--gold);padding:18px 16px 14px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.logo-mark{width:42px;height:42px;background:var(--gold);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:24px;height:24px}
+.header-text h1{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.1}
+.header-text p{font-size:.7rem;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-top:2px}
+
+.container{padding:18px 14px;max-width:600px;margin:0 auto}
+
+.card{background:var(--navy-mid);border:1px solid var(--border);border-radius:10px;padding:16px 14px;margin-bottom:14px}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';display:block;width:3px;height:14px;background:var(--gold);border-radius:2px}
+
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-light);margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:'Barlow',sans-serif;font-size:.93rem;padding:9px 11px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+select option{background:var(--navy-mid)}
+textarea{resize:vertical;min-height:68px}
+input[type="file"]{padding:7px;font-size:.8rem;color:var(--text-muted);cursor:pointer}
+input[type="file"]::file-selector-button{background:var(--navy-light);border:1px solid var(--border);border-radius:4px;color:var(--gold-light);font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:.78rem;letter-spacing:.04em;padding:4px 9px;margin-right:8px;cursor:pointer}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.km-result{background:rgba(201,168,76,.08);border:1px solid var(--border);border-radius:6px;padding:9px 11px;display:flex;justify-content:space-between;align-items:center}
+.km-result span:first-child{font-size:.78rem;color:var(--text-muted);font-weight:500}
+.km-result .amount{font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:700;color:var(--gold)}
+
+.btn-add{width:100%;background:transparent;border:1px dashed rgba(201,168,76,.4);border-radius:6px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:9px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px}
+.btn-add:hover{background:rgba(201,168,76,.08);border-color:var(--gold)}
+.btn-add svg{width:15px;height:15px}
+
+.entry-block{background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:13px 12px;margin-bottom:10px;position:relative}
+.entry-num{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px}
+.btn-remove{position:absolute;top:8px;right:8px;background:transparent;border:none;color:#e05c5c88;cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:4px;line-height:1;transition:color .2s}
+.btn-remove:hover{color:var(--error)}
+
+.total-bar{background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.05));border:1px solid var(--gold);border-radius:10px;padding:15px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.total-bar .label{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-light)}
+.total-bar .total-amount{font-family:'Barlow Condensed',sans-serif;font-size:1.75rem;font-weight:800;color:var(--gold);line-height:1}
+
+.btn-submit{width:100%;background:var(--gold);border:none;border-radius:8px;color:var(--navy);font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:15px;cursor:pointer;transition:background .2s,transform .1s}
+.btn-submit:active{transform:scale(.98)}
+.btn-submit:hover{background:var(--gold-light)}
+.btn-submit:disabled{background:#4a4a3a;color:#888;cursor:not-allowed}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--navy-light);border:1px solid var(--gold);border-radius:8px;padding:11px 18px;font-size:.85rem;font-weight:600;color:var(--white);z-index:9999;transition:transform .35s cubic-bezier(.22,1,.36,1);white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--success);color:var(--success)}
+.toast.error{border-color:var(--error);color:var(--error)}
+
+/* ── Autocomplete ── */
+.autocomplete-wrap{position:relative}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:var(--navy-light);border:1px solid var(--gold);border-top:none;border-radius:0 0 6px 6px;z-index:500;max-height:180px;overflow-y:auto;display:none}
+.autocomplete-list.open{display:block}
+.autocomplete-item{padding:9px 12px;font-size:.85rem;cursor:pointer;color:var(--white);border-bottom:1px solid rgba(255,255,255,.05);line-height:1.3}
+.autocomplete-item:hover{background:rgba(201,168,76,.15);color:var(--gold)}
+.autocomplete-item:last-child{border-bottom:none}
+
+/* ── Calcul km bouton ── */
+.btn-calc-km{width:100%;margin-top:8px;background:rgba(201,168,76,.1);border:1px solid var(--gold);border-radius:6px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:9px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-calc-km:hover{background:rgba(201,168,76,.2)}
+.btn-calc-km:disabled{opacity:.5;cursor:not-allowed}
+.btn-calc-km svg{width:14px;height:14px}
+.km-result.loading .amount{color:var(--text-muted);font-size:.85rem}
+
+/* ── Photo picker ── */
+.photo-picker-label{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-light);margin-bottom:6px;display:block}
+.photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-photo{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 8px;border-radius:7px;border:1px solid var(--border);background:var(--navy);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .2s;-webkit-appearance:none;width:100%}
+.btn-photo:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07)}
+.btn-photo.has-file{border-color:var(--success);color:var(--success);background:rgba(76,175,130,.07)}
+.input-hidden{display:none}
+.photo-previews{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.photo-thumb-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.photo-thumb{width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--border);display:block}
+.photo-thumb-del{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:var(--error);border:none;color:#fff;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0}
+/* ── Boutons PDF ── */
+.btn-pdf{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;background:var(--navy-light);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:13px 8px;cursor:pointer;transition:all .2s}
+.btn-pdf:hover{background:rgba(201,168,76,.15)}
+.btn-pdf-outline{background:transparent;border-color:rgba(201,168,76,.4);color:var(--text-muted)}
+.btn-pdf-outline:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07)}
+.tax-breakdown{background:rgba(201,168,76,.05);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-top:8px}
+.tax-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:.82rem;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.04)}
+.tax-row:last-child{border-bottom:none}
+.tax-row span:last-child{font-weight:600;color:var(--white)}
+.tax-row.total-row{margin-top:4px;padding-top:8px;border-top:1px solid var(--border)}
+.tax-row.total-row span{color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700}
+.datepicker-wrap{position:relative}
+.datepicker-input{cursor:pointer;background:var(--navy);caret-color:transparent}
+.datepicker-input:focus{border-color:var(--gold)}
+.cal-popup{position:absolute;top:calc(100% + 6px);left:0;z-index:600;background:var(--navy-mid);border:1px solid var(--gold);border-radius:10px;padding:14px;width:280px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:none}
+.cal-popup.open{display:block}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-nav{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--gold);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:background .15s}
+.cal-nav:hover{background:rgba(201,168,76,.15)}
+.cal-month-label{font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--white);cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .15s}
+.cal-month-label:hover{background:rgba(201,168,76,.1);color:var(--gold)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);text-align:center;padding:3px 0 6px}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:.82rem;cursor:pointer;color:var(--white);transition:background .15s,color .15s;border:1px solid transparent}
+.cal-day:hover{background:rgba(201,168,76,.18);color:var(--gold)}
+.cal-day.today{border-color:rgba(201,168,76,.4);color:var(--gold-light)}
+.cal-day.selected{background:var(--gold);color:var(--navy);font-weight:700}
+.cal-day.other-month{color:#3a4a5a}
+.cal-day.other-month:hover{color:var(--text-muted)}
+.cal-day.empty{cursor:default}
+
+/* ── Year/Month picker overlay ── */
+.cal-ym-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
+.cal-ym-item{padding:7px 4px;border-radius:5px;font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:600;text-align:center;cursor:pointer;color:var(--white);border:1px solid transparent;transition:all .15s}
+.cal-ym-item:hover{background:rgba(201,168,76,.15);color:var(--gold)}
+.cal-ym-item.active{background:var(--gold);color:var(--navy)}
+.cal-ym-back{display:flex;align-items:center;gap:5px;background:transparent;border:none;color:var(--text-muted);font-family:'Barlow',sans-serif;font-size:.75rem;cursor:pointer;margin-bottom:8px;padding:2px 0}
+.cal-ym-back:hover{color:var(--gold)}
+.cal-year-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-year-label{font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;color:var(--white)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-mark">
+    <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="12" width="20" height="11" rx="1.5" fill="#0d1b2a"/>
+      <path d="M1 13L13 3L25 13" stroke="#0d1b2a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="9" y="16" width="8" height="7" rx="1" fill="#0d1b2a"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Construction RM</h1>
+    <p>Rapport de dépenses</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div class="card-title">Informations générales</div>
+    <div class="field">
+      <label>Employé</label>
+      <select id="employe">
+        <option value="">— Sélectionner —</option>
+        <option>Aimerick Laplante</option>
+        <option>Roger-Pier Mercier</option>
+        <option>Jordan Cyr</option>
+        <option>Luc Grisé</option>
+        <option>Olivier Desmarais</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Date du rapport</label>
+      <div class="datepicker-wrap" id="dp_wrap_dateRapport">
+        <input type="text" class="datepicker-input" id="dateRapport" placeholder="Sélectionner une date" readonly onclick="calOpen('dateRapport')">
+        <div class="cal-popup" id="cal_dateRapport"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Déplacements (0,73 $/km)</div>
+    <div id="deplList"></div>
+    <button class="btn-add" onclick="addDepl()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Ajouter un déplacement
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Repas</div>
+    <div id="repasList"></div>
+    <button class="btn-add" onclick="addRepas()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Ajouter un repas
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Matériaux, location &amp; projet</div>
+    <div id="matList"></div>
+    <button class="btn-add" onclick="addMat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Ajouter une dépense
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Autres dépenses</div>
+    <div id="autreList"></div>
+    <button class="btn-add" onclick="addAutre()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Ajouter une dépense
+    </button>
+  </div>
+
+  <div class="total-bar">
+    <div class="label">Total à rembourser</div>
+    <div class="total-amount" id="grandTotal">0,00 $</div>
+  </div>
+
+  <button class="btn-submit" id="btnSoumettre" onclick="soumettre()">
+    ✉&nbsp; Envoyer la demande
+  </button>
+
+  <!-- Boutons PDF — apparaissent après envoi réussi -->
+  <div id="pdfBtns" style="display:none;margin-top:12px;display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn-pdf" id="btnPdfAvec" onclick="genererPDF(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        PDF avec photos
+      </button>
+      <button class="btn-pdf btn-pdf-outline" id="btnPdfSans" onclick="genererPDF(false)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        PDF sans photos
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ── Google Maps API Key ─────────────────────────────────────────
+const GOOGLE_API_KEY = 'VOTRE_CLE_API_GOOGLE'; // ← à remplacer
+
+// ── Autocomplétion OpenStreetMap (Nominatim) ────────────────────
+let acTimers = {};
+
+async function acSuggest(input, listId) {
+  const q = input.value.trim();
+  const list = document.getElementById(listId);
+  if (q.length < 3) { list.classList.remove('open'); list.innerHTML = ''; return; }
+
+  clearTimeout(acTimers[listId]);
+  acTimers[listId] = setTimeout(async () => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=ca&format=json&limit=5&addressdetails=1`;
+      const res  = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
+      const data = await res.json();
+      list.innerHTML = '';
+      if (!data.length) { list.classList.remove('open'); return; }
+      data.forEach(place => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = place.display_name;
+        item.addEventListener('mousedown', () => {
+          input.value = place.display_name;
+          list.classList.remove('open');
+          list.innerHTML = '';
+        });
+        list.appendChild(item);
+      });
+      list.classList.add('open');
+    } catch (e) { list.classList.remove('open'); }
+  }, 350);
+}
+
+function acBlur(listId) {
+  setTimeout(() => {
+    const list = document.getElementById(listId);
+    if (list) list.classList.remove('open');
+  }, 200);
+}
+
+// ── Calcul distance via Google Distance Matrix ──────────────────
+async function calculerKm(id) {
+  const depart  = document.getElementById(id + '_depart').value.trim();
+  const arrivee = document.getElementById(id + '_arrivee').value.trim();
+  if (!depart || !arrivee) { toast('Entrez les adresses de départ et d\'arrivée.', 'error'); return; }
+
+  const btn     = document.getElementById(id + '_btnCalc');
+  const montant = document.getElementById(id + '_montant');
+  const result  = document.getElementById(id + '_kmresult');
+  const kmInput = document.getElementById(id + '_km');
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;width:14px;height:14px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Calcul en cours…`;
+  result.classList.add('loading');
+  montant.textContent = 'Calcul…';
+
+  try {
+    // Proxy via allorigins pour éviter CORS
+    const apiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(depart)}&destinations=${encodeURIComponent(arrivee)}&mode=driving&language=fr&key=${GOOGLE_API_KEY}`;
+    const proxy  = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+    const res    = await fetch(proxy);
+    const outer  = await res.json();
+    const data   = JSON.parse(outer.contents);
+
+    if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
+      const metres = data.rows[0].elements[0].distance.value;
+      const km     = Math.round(metres / 100) / 10; // arrondi au 0.1 km
+      kmInput.value = km;
+      result.classList.remove('loading');
+      montant.textContent = fmtCAD(km * TAUX_KM);
+      updateTotal();
+      toast(`✓ ${km} km calculés automatiquement`, 'success');
+    } else {
+      throw new Error(data.status);
+    }
+  } catch (e) {
+    result.classList.remove('loading');
+    montant.textContent = '—';
+    toast('Impossible de calculer. Vérifiez les adresses ou saisissez les km manuellement.', 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Recalculer la distance`;
+}
+
+// ── Animation spin ──────────────────────────────────────────────
+const spinStyle = document.createElement('style');
+spinStyle.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(spinStyle);
+const EMAILJS_PUBLIC_KEY  = 'LEqzBFaMHSa7pKrQG';
+const EMAILJS_SERVICE_ID  = 'service_ehb7zxt';
+const EMAILJS_TEMPLATE_ID = 'template_xc772wf';
+
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+const TAUX_KM = 0.73;
+let deplCount = 0, repasCount = 0, matCount = 0, autreCount = 0;
+
+// ── Déplacements ───────────────────────────────────────────────
+function addDepl() {
+  deplCount++;
+  const id = 'depl_' + deplCount;
+  const div = document.createElement('div');
+  div.className = 'entry-block'; div.id = id;
+  div.innerHTML = `
+    <div class="entry-num">Déplacement #${deplCount}</div>
+    <button class="btn-remove" onclick="removeEntry('${id}')">✕</button>
+    <div class="field"><label>Date</label><div class="datepicker-wrap"><input type="text" class="datepicker-input" id="${id}_date" placeholder="Sélectionner une date" readonly onclick="calOpen('${id}_date')"><div class="cal-popup" id="cal_${id}_date"></div></div></div>
+    <div class="field">
+      <label>Lieu de départ</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="${id}_depart" placeholder="Ex: 123 rue King, Sherbrooke" autocomplete="off"
+               oninput="acSuggest(this,'${id}_depart_list')" onblur="acBlur('${id}_depart_list')">
+        <div class="autocomplete-list" id="${id}_depart_list"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Lieu d'arrivée</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="${id}_arrivee" placeholder="Ex: 456 boul. René-Lévesque, Montréal" autocomplete="off"
+               oninput="acSuggest(this,'${id}_arrivee_list')" onblur="acBlur('${id}_arrivee_list')">
+        <div class="autocomplete-list" id="${id}_arrivee_list"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Kilomètres parcourus</label>
+      <input type="number" id="${id}_km" min="0" step="0.1" placeholder="0" oninput="calcDepl('${id}')">
+    </div>
+    <div class="km-result" id="${id}_kmresult">
+      <span>Montant remboursable (0,73 $/km)</span>
+      <span class="amount" id="${id}_montant">0,00 $</span>
+    </div>`;
+  document.getElementById('deplList').appendChild(div);
+}
+
+function calcDepl(id) {
+  const km = parseFloat(document.getElementById(id + '_km').value) || 0;
+  document.getElementById(id + '_montant').textContent = fmtCAD(km * TAUX_KM);
+  updateTotal();
+}
+
+// ── Repas ──────────────────────────────────────────────────────
+function addRepas() {
+  repasCount++;
+  const id = 'repas_' + repasCount;
+  const div = document.createElement('div');
+  div.className = 'entry-block'; div.id = id;
+  div.innerHTML = `
+    <div class="entry-num">Repas #${repasCount}</div>
+    <button class="btn-remove" onclick="removeEntry('${id}')">✕</button>
+    <div class="field"><label>Date</label><div class="datepicker-wrap"><input type="text" class="datepicker-input" id="${id}_date" placeholder="Sélectionner une date" readonly onclick="calOpen('${id}_date')"><div class="cal-popup" id="cal_${id}_date"></div></div></div>
+    <div class="field"><label>Nombre de personnes</label><input type="number" id="${id}_nb" min="1" placeholder="1"></div>
+    <div class="field"><label>Raison / Description</label><textarea id="${id}_raison" placeholder="Ex: Lunch chantier avec client…"></textarea></div>
+    <div class="row">
+      <div class="field"><label>Montant total avec taxes ($)</label><input type="number" id="${id}_ttc" min="0" step="0.01" placeholder="0,00" oninput="calcRepas('${id}')"></div>
+      <div class="field"><label>Pourboire ($)</label><input type="number" id="${id}_pourboire" min="0" step="0.01" placeholder="0,00" oninput="calcRepas('${id}')"></div>
+    </div>
+    <div class="tax-breakdown" id="${id}_breakdown">
+      <div class="tax-row"><span>Montant avant taxes</span><span id="${id}_avant">—</span></div>
+      <div class="tax-row"><span>TPS (5 %)</span><span id="${id}_tps">—</span></div>
+      <div class="tax-row"><span>TVQ (9,975 %)</span><span id="${id}_tvq">—</span></div>
+      <div class="tax-row total-row"><span>Total remboursable (avec pourboire)</span><span id="${id}_montant">0,00 $</span></div>
+    </div>
+    <div class="field">${photoPickerHTML(id)}</div>`;
+  document.getElementById('repasList').appendChild(div);
+  bindPhotoPicker(id);
+}
+
+// ── Matériaux / Location ───────────────────────────────────────
+function addMat() {
+  matCount++;
+  const id = 'mat_' + matCount;
+  const div = document.createElement('div');
+  div.className = 'entry-block'; div.id = id;
+  div.innerHTML = `
+    <div class="entry-num">Dépense projet #${matCount}</div>
+    <button class="btn-remove" onclick="removeEntry('${id}')">✕</button>
+    <div class="field"><label>Date</label><div class="datepicker-wrap"><input type="text" class="datepicker-input" id="${id}_date" placeholder="Sélectionner une date" readonly onclick="calOpen('${id}_date')"><div class="cal-popup" id="cal_${id}_date"></div></div></div>
+    <div class="row">
+      <div class="field"><label>Fournisseur / Entreprise</label><input type="text" id="${id}_fourn" placeholder="Ex: Rona, Sunbelt…"></div>
+      <div class="field"><label>Nom du projet</label><input type="text" id="${id}_projet" placeholder="Ex: Réno Leblanc"></div>
+    </div>
+    <div class="field"><label>Type</label>
+      <select id="${id}_type">
+        <option value="">— Sélectionner —</option>
+        <option>Matériaux</option>
+        <option>Location d'outil</option>
+        <option>Sous-traitance</option>
+        <option>Autre lié au projet</option>
+      </select>
+    </div>
+    <div class="field"><label>Justification</label><textarea id="${id}_justif" placeholder="Préciser l'utilisation…"></textarea></div>
+    <div class="field"><label>Montant ($ TTC)</label><input type="number" id="${id}_montant" min="0" step="0.01" placeholder="0,00" oninput="updateTotal()"></div>
+    <div class="field">${photoPickerHTML(id)}</div>`;
+  document.getElementById('matList').appendChild(div);
+  bindPhotoPicker(id);
+}
+
+// ── Autres ─────────────────────────────────────────────────────
+function addAutre() {
+  autreCount++;
+  const id = 'autre_' + autreCount;
+  const div = document.createElement('div');
+  div.className = 'entry-block'; div.id = id;
+  div.innerHTML = `
+    <div class="entry-num">Autre dépense #${autreCount}</div>
+    <button class="btn-remove" onclick="removeEntry('${id}')">✕</button>
+    <div class="field"><label>Date</label><div class="datepicker-wrap"><input type="text" class="datepicker-input" id="${id}_date" placeholder="Sélectionner une date" readonly onclick="calOpen('${id}_date')"><div class="cal-popup" id="cal_${id}_date"></div></div></div>
+    <div class="field"><label>Entreprise / Fournisseur</label><input type="text" id="${id}_ent" placeholder="Ex: Canadian Tire"></div>
+    <div class="field"><label>Projet (si applicable)</label><input type="text" id="${id}_projet" placeholder="Optionnel"></div>
+    <div class="field"><label>Justification</label><textarea id="${id}_justif" placeholder="Expliquer la dépense…"></textarea></div>
+    <div class="field"><label>Montant total avec taxes ($)</label><input type="number" id="${id}_ttc" min="0" step="0.01" placeholder="0,00" oninput="calcAutre('${id}')"></div>
+    <div class="tax-breakdown" id="${id}_breakdown">
+      <div class="tax-row"><span>Montant avant taxes</span><span id="${id}_avant">—</span></div>
+      <div class="tax-row"><span>TPS (5 %)</span><span id="${id}_tps">—</span></div>
+      <div class="tax-row"><span>TVQ (9,975 %)</span><span id="${id}_tvq">—</span></div>
+      <div class="tax-row total-row"><span>Total remboursable</span><span id="${id}_montant">0,00 $</span></div>
+    </div>
+    <div class="field">${photoPickerHTML(id)}</div>`;
+  document.getElementById('autreList').appendChild(div);
+  bindPhotoPicker(id);
+}
+
+// ── Taxes Québec ───────────────────────────────────────────────
+// TPS 5% + TVQ 9.975% → facteur combiné = 1.14975
+const TPS = 0.05;
+const TVQ = 0.09975;
+
+function calcTaxes(ttc) {
+  const avant = ttc / (1 + TPS + TVQ);
+  const tps   = avant * TPS;
+  const tvq   = avant * TVQ;
+  return { avant, tps, tvq };
+}
+
+function calcRepas(id) {
+  const ttc       = parseFloat(document.getElementById(id + '_ttc')?.value)       || 0;
+  const pourboire = parseFloat(document.getElementById(id + '_pourboire')?.value) || 0;
+  const { avant, tps, tvq } = calcTaxes(ttc);
+  const total = ttc + pourboire;
+
+  document.getElementById(id + '_avant').textContent   = fmtCAD(avant);
+  document.getElementById(id + '_tps').textContent     = fmtCAD(tps);
+  document.getElementById(id + '_tvq').textContent     = fmtCAD(tvq);
+  // _montant = valeur utilisée pour le total général
+  const m = document.getElementById(id + '_montant');
+  if (m) m.textContent = fmtCAD(total);
+  // stocker la valeur numérique dans dataset pour collect()
+  if (m) m.dataset.value = total.toFixed(2);
+  updateTotal();
+}
+
+function calcAutre(id) {
+  const ttc = parseFloat(document.getElementById(id + '_ttc')?.value) || 0;
+  const { avant, tps, tvq } = calcTaxes(ttc);
+
+  document.getElementById(id + '_avant').textContent = fmtCAD(avant);
+  document.getElementById(id + '_tps').textContent   = fmtCAD(tps);
+  document.getElementById(id + '_tvq').textContent   = fmtCAD(tvq);
+  const m = document.getElementById(id + '_montant');
+  if (m) m.textContent = fmtCAD(ttc);
+  if (m) m.dataset.value = ttc.toFixed(2);
+  updateTotal();
+}
+function removeEntry(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  updateTotal();
+}
+
+function fmtCAD(n) { return n.toFixed(2).replace('.', ',') + ' $'; }
+
+// ── Photo picker ───────────────────────────────────────────────
+function photoPickerHTML(id) {
+  return `
+    <span class="photo-picker-label">Photo(s) de la facture</span>
+    <div class="photo-btns">
+      <button type="button" class="btn-photo" id="${id}_btn_cam" onclick="triggerInput('${id}_cam')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        Caméra
+      </button>
+      <button type="button" class="btn-photo" id="${id}_btn_file" onclick="triggerInput('${id}_file')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+          <polyline points="13 2 13 9 20 9"/>
+        </svg>
+        Fichier
+      </button>
+    </div>
+    <input class="input-hidden" type="file" id="${id}_cam"  accept="image/*" capture="environment">
+    <input class="input-hidden" type="file" id="${id}_file" accept="image/*,application/pdf" multiple>
+    <div class="photo-previews" id="${id}_previews"></div>`;
+}
+
+function triggerInput(inputId) {
+  document.getElementById(inputId).click();
+}
+
+function bindPhotoPicker(id) {
+  ['cam', 'file'].forEach(src => {
+    const inp = document.getElementById(`${id}_${src}`);
+    const btn = document.getElementById(`${id}_btn_${src}`);
+    inp.addEventListener('change', () => {
+      Array.from(inp.files).forEach(file => addPhotoThumb(id, file));
+      if (inp.files.length) btn.classList.add('has-file');
+      inp.value = ''; // reset so same file can be re-added if needed
+    });
+  });
+}
+
+function addPhotoThumb(id, file) {
+  const container = document.getElementById(`${id}_previews`);
+  const thumbId   = `thumb_${id}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+
+  // Store file in a map keyed by thumbId
+  photoStore[thumbId] = file;
+
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-thumb-wrap';
+      wrap.id = thumbId + '_wrap';
+      wrap.innerHTML = `
+        <img class="photo-thumb" src="${e.target.result}">
+        <button class="photo-thumb-del" type="button" onclick="removeThumb('${thumbId}')">✕</button>`;
+      container.appendChild(wrap);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // PDF — show icon placeholder
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-thumb-wrap';
+    wrap.id = thumbId + '_wrap';
+    wrap.innerHTML = `
+      <div class="photo-thumb" style="display:flex;align-items:center;justify-content:center;background:rgba(201,168,76,.12);font-size:.6rem;color:var(--gold);text-align:center;padding:4px;">PDF<br>${file.name.slice(0,10)}</div>
+      <button class="photo-thumb-del" type="button" onclick="removeThumb('${thumbId}')">✕</button>`;
+    container.appendChild(wrap);
+  }
+}
+
+function removeThumb(thumbId) {
+  delete photoStore[thumbId];
+  const wrap = document.getElementById(thumbId + '_wrap');
+  if (wrap) wrap.remove();
+}
+
+// Store for all attached photos keyed by thumbId
+const photoStore = {};
+
+function updateTotal() {
+  let total = 0;
+  // Déplacements
+  document.querySelectorAll('[id^="depl_"][id$="_km"]').forEach(el => {
+    total += (parseFloat(el.value) || 0) * TAUX_KM;
+  });
+  // Repas — lire dataset.value sur le span _montant
+  document.querySelectorAll('[id^="repas_"][id$="_montant"]').forEach(el => {
+    total += parseFloat(el.dataset.value || 0);
+  });
+  // Mat — input normal
+  document.querySelectorAll('[id^="mat_"][id$="_montant"]').forEach(el => {
+    total += parseFloat(el.value) || 0;
+  });
+  // Autres — lire dataset.value sur le span _montant
+  document.querySelectorAll('[id^="autre_"][id$="_montant"]').forEach(el => {
+    total += parseFloat(el.dataset.value || 0);
+  });
+  document.getElementById('grandTotal').textContent = fmtCAD(total);
+}
+
+// ── Collecte ───────────────────────────────────────────────────
+function collect() {
+  const depls = [];
+  document.querySelectorAll('[id^="depl_"][id$="_km"]').forEach(el => {
+    const b = el.id.replace('_km', '');
+    const km = parseFloat(el.value) || 0;
+    depls.push({ date: val(b+'_date'), depart: val(b+'_depart'), arrivee: val(b+'_arrivee'), km, montant: (km*TAUX_KM).toFixed(2) });
+  });
+
+  const repas = [];
+  document.querySelectorAll('[id^="repas_"][id$="_ttc"]').forEach(el => {
+    const b   = el.id.replace('_ttc','');
+    const ttc = parseFloat(el.value) || 0;
+    const pbt = parseFloat(document.getElementById(b+'_pourboire')?.value) || 0;
+    const { avant, tps, tvq } = calcTaxes(ttc);
+    repas.push({ date: val(b+'_date'), nb: val(b+'_nb'), raison: val(b+'_raison'),
+      avant: avant.toFixed(2), tps: tps.toFixed(2), tvq: tvq.toFixed(2),
+      pourboire: pbt.toFixed(2), montant: (ttc+pbt).toFixed(2) });
+  });
+
+  const mats = [];
+  document.querySelectorAll('[id^="mat_"][id$="_montant"]').forEach(el => {
+    const b = el.id.replace('_montant','');
+    mats.push({ date: val(b+'_date'), fourn: val(b+'_fourn'), projet: val(b+'_projet'), type: val(b+'_type'), justif: val(b+'_justif'), montant: parseFloat(el.value||0).toFixed(2) });
+  });
+
+  const autres = [];
+  document.querySelectorAll('[id^="autre_"][id$="_ttc"]').forEach(el => {
+    const b   = el.id.replace('_ttc','');
+    const ttc = parseFloat(el.value) || 0;
+    const { avant, tps, tvq } = calcTaxes(ttc);
+    autres.push({ date: val(b+'_date'), ent: val(b+'_ent'), projet: val(b+'_projet'), justif: val(b+'_justif'),
+      avant: avant.toFixed(2), tps: tps.toFixed(2), tvq: tvq.toFixed(2), montant: ttc.toFixed(2) });
+  });
+
+  return { depls, repas, mats, autres };
+}
+
+function val(id) { const e = document.getElementById(id); return e ? (e.dataset.isoDate || e.value.trim()) : ''; }
+
+// ── Corps du courriel ──────────────────────────────────────────
+function buildBody(employe, dateRapport, d) {
+  const lines = [
+    'RAPPORT DE DÉPENSES — CONSTRUCTION RM',
+    '═══════════════════════════════════════',
+    'Employé   : ' + employe,
+    'Date      : ' + dateRapport,
+    '',
+  ];
+
+  if (d.depls.length) {
+    lines.push('── DÉPLACEMENTS (0,73 $/km) ──');
+    d.depls.forEach((x, i) => lines.push(`  #${i+1} | ${x.date} | ${x.depart} → ${x.arrivee} | ${x.km} km | ${x.montant} $`));
+    lines.push('  Sous-total : ' + fmtCAD(d.depls.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    lines.push('');
+  }
+
+  if (d.repas.length) {
+    lines.push('── REPAS ──');
+    d.repas.forEach((x, i) => {
+      lines.push(`  #${i+1} | ${x.date} | ${x.nb} pers. | ${x.raison}`);
+      lines.push(`       Avant taxes : ${x.avant} $ | TPS : ${x.tps} $ | TVQ : ${x.tvq} $`);
+      lines.push(`       Pourboire : ${x.pourboire} $ | Total remboursable : ${x.montant} $`);
+    });
+    lines.push('  Sous-total : ' + fmtCAD(d.repas.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    lines.push('');
+  }
+
+  if (d.mats.length) {
+    lines.push('── MATÉRIAUX / LOCATION / PROJET ──');
+    d.mats.forEach((x, i) => lines.push(`  #${i+1} | ${x.date} | ${x.fourn} | Projet: ${x.projet} | Type: ${x.type} | ${x.justif} | ${x.montant} $`));
+    lines.push('  Sous-total : ' + fmtCAD(d.mats.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    lines.push('');
+  }
+
+  if (d.autres.length) {
+    lines.push('── AUTRES DÉPENSES ──');
+    d.autres.forEach((x, i) => {
+      lines.push(`  #${i+1} | ${x.date} | ${x.ent} | Projet: ${x.projet} | ${x.justif}`);
+      lines.push(`       Avant taxes : ${x.avant} $ | TPS : ${x.tps} $ | TVQ : ${x.tvq} $ | Total TTC : ${x.montant} $`);
+    });
+    lines.push('  Sous-total : ' + fmtCAD(d.autres.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    lines.push('');
+  }
+
+  const grand = [...d.depls,...d.repas,...d.mats,...d.autres].reduce((s,x)=>s+parseFloat(x.montant),0);
+  lines.push('═══════════════════════════════════════');
+  lines.push('TOTAL À REMBOURSER : ' + fmtCAD(grand));
+  lines.push('═══════════════════════════════════════');
+  lines.push('');
+  lines.push('Note : Les photos de factures sont jointes à ce courriel.');
+
+  return lines.join('\n');
+}
+
+// ── Soumission ─────────────────────────────────────────────────
+async function soumettre() {
+  const employe     = document.getElementById('employe').value;
+  const dateRapport = getDateVal('dateRapport');
+  if (!employe) { toast('Veuillez sélectionner un employé.', 'error'); return; }
+  if (!dateRapport) { toast('Veuillez indiquer la date du rapport.', 'error'); return; }
+
+  const data = collect();
+  const total = data.depls.length + data.repas.length + data.mats.length + data.autres.length;
+  if (total === 0) { toast('Ajoutez au moins une dépense avant d\'envoyer.', 'error'); return; }
+
+  const btn = document.getElementById('btnSoumettre');
+  btn.disabled = true; btn.textContent = 'Envoi en cours…';
+
+  try {
+    const corps = buildBody(employe, dateRapport, data);
+    const grand = [...data.depls,...data.repas,...data.mats,...data.autres].reduce((s,x)=>s+parseFloat(x.montant),0);
+
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:  'info@constructionrm.ca',
+      from_name: employe,
+      subject:   'Rapport de dépenses – ' + employe + ' – ' + dateRapport,
+      total:     fmtCAD(grand),
+      message:   corps,
+    });
+
+    toast('✓ Rapport envoyé avec succès !', 'success');
+    // Afficher les boutons PDF
+    const pdfBtns = document.getElementById('pdfBtns');
+    pdfBtns.style.display = 'block';
+    btn.disabled = false; btn.textContent = '✉  Envoyer la demande';
+  } catch (err) {
+    console.error(err);
+    toast('Erreur d\'envoi. Vérifiez la config EmailJS.', 'error');
+    btn.disabled = false; btn.textContent = '✉  Envoyer la demande';
+  }
+}
+
+// ── Génération PDF ─────────────────────────────────────────────
+async function genererPDF(avecPhotos) {
+  const { jsPDF } = window.jspdf;
+  const employe     = document.getElementById('employe').value;
+  const dateRapport = getDateVal('dateRapport');
+  const data        = collect();
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const W = 215.9, margin = 14;
+  let y = 0;
+
+  // ── Couleurs ──
+  const NAVY   = [13, 27, 42];
+  const GOLD   = [201, 168, 76];
+  const WHITE  = [255, 255, 255];
+  const LGREY  = [240, 238, 233];
+  const DGREY  = [80, 95, 110];
+
+  function checkPage(needed = 10) {
+    if (y + needed > 260) { doc.addPage(); y = 20; }
+  }
+
+  function hLine(yy, color = LGREY) {
+    doc.setDrawColor(...color);
+    doc.setLineWidth(0.3);
+    doc.line(margin, yy, W - margin, yy);
+  }
+
+  function sectionHeader(title) {
+    checkPage(14);
+    doc.setFillColor(...NAVY);
+    doc.roundedRect(margin, y, W - margin*2, 9, 1.5, 1.5, 'F');
+    doc.setTextColor(...GOLD);
+    doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text(title.toUpperCase(), margin + 4, y + 6);
+    y += 13;
+  }
+
+  function labelVal(label, val, x1 = margin, x2 = margin + 38, rowY = y) {
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.setTextColor(...DGREY); doc.text(label, x1, rowY);
+    doc.setTextColor(30, 30, 30); doc.setFont('helvetica','bold');
+    doc.text(String(val || '—'), x2, rowY);
+  }
+
+  function taxRow(label, val) {
+    checkPage(6);
+    doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.setTextColor(...DGREY); doc.text(label, margin + 4, y);
+    doc.setTextColor(30,30,30); doc.text(String(val), W - margin - 2, y, { align: 'right' });
+    y += 5;
+  }
+
+  function totalRow(label, val) {
+    checkPage(8);
+    doc.setFillColor(...LGREY);
+    doc.roundedRect(margin, y - 4, W - margin*2, 7, 1, 1, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.setTextColor(...NAVY); doc.text(label, margin + 4, y + 0.5);
+    doc.setTextColor(...[180, 130, 40]); doc.text(String(val), W - margin - 2, y + 0.5, { align: 'right' });
+    y += 9;
+  }
+
+  // ══ EN-TÊTE ════════════════════════════════════════════════════
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, W, 38, 'F');
+  // Barre or
+  doc.setFillColor(...GOLD);
+  doc.rect(0, 38, W, 1.5, 'F');
+  // Logo carré
+  doc.setFillColor(...GOLD);
+  doc.roundedRect(margin, 8, 20, 20, 2, 2, 'F');
+  doc.setTextColor(...NAVY);
+  doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('RM', margin + 10, 21, { align: 'center' });
+  // Titre
+  doc.setTextColor(...WHITE);
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('CONSTRUCTION RM', margin + 25, 18);
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.setTextColor(...GOLD);
+  doc.text('RAPPORT DE DÉPENSES', margin + 25, 25);
+  // Total en haut à droite
+  const grand = [...data.depls,...data.repas,...data.mats,...data.autres].reduce((s,x)=>s+parseFloat(x.montant),0);
+  doc.setTextColor(...DGREY); doc.setFontSize(7);
+  doc.text('TOTAL À REMBOURSER', W - margin, 16, { align: 'right' });
+  doc.setTextColor(...GOLD); doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text(fmtCAD(grand), W - margin, 26, { align: 'right' });
+
+  y = 48;
+
+  // ══ INFO EMPLOYÉ ═══════════════════════════════════════════════
+  doc.setFillColor(22, 34, 54);
+  doc.roundedRect(margin, y, W - margin*2, 14, 2, 2, 'F');
+  doc.setTextColor(...DGREY); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('EMPLOYÉ', margin + 4, y + 5);
+  doc.text('DATE DU RAPPORT', W/2 + 4, y + 5);
+  doc.setTextColor(...WHITE); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text(employe, margin + 4, y + 11);
+  doc.setTextColor(226, 196, 122); doc.setFontSize(9);
+  doc.text(dateRapport, W/2 + 4, y + 11);
+  y += 20;
+
+  // ══ DÉPLACEMENTS ═══════════════════════════════════════════════
+  if (data.depls.length) {
+    sectionHeader('Déplacements (0,73 $/km)');
+    data.depls.forEach((x, i) => {
+      checkPage(20);
+      doc.setFillColor(248, 247, 244);
+      doc.roundedRect(margin, y - 3, W - margin*2, 17, 1.5, 1.5, 'F');
+      doc.setTextColor(...DGREY); doc.setFontSize(7); doc.setFont('helvetica','normal');
+      doc.text(`#${i+1}`, margin + 3, y + 2);
+      labelVal('Date :', x.date,         margin + 3,  margin + 14, y + 2);
+      labelVal('Départ :', x.depart,     margin + 3,  margin + 18, y + 7);
+      labelVal('Arrivée :', x.arrivee,   margin + 3,  margin + 18, y + 11);
+      doc.setTextColor(...[180,130,40]); doc.setFontSize(9); doc.setFont('helvetica','bold');
+      doc.text(`${x.km} km  →  ${fmtCAD(parseFloat(x.montant))}`, W - margin - 2, y + 7, { align: 'right' });
+      y += 20; hLine(y - 3);
+    });
+    totalRow('Sous-total déplacements', fmtCAD(data.depls.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    y += 4;
+  }
+
+  // ══ REPAS ═══════════════════════════════════════════════════════
+  if (data.repas.length) {
+    sectionHeader('Repas');
+    for (let i = 0; i < data.repas.length; i++) {
+      const x = data.repas[i];
+      checkPage(38);
+      doc.setFillColor(248, 247, 244);
+      doc.roundedRect(margin, y - 3, W - margin*2, 35, 1.5, 1.5, 'F');
+      doc.setTextColor(...DGREY); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+      doc.text(`Repas #${i+1}`, margin + 3, y + 2);
+      labelVal('Date :', x.date, margin + 3, margin + 16, y + 7);
+      labelVal('Personnes :', x.nb, margin + 3, margin + 25, y + 12);
+      doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
+      const lines = doc.splitTextToSize(x.raison || '—', W - margin*2 - 6);
+      doc.text(lines, margin + 3, y + 17);
+      y += 20;
+      taxRow('Montant avant taxes', x.avant + ' $');
+      taxRow('TPS (5 %)', x.tps + ' $');
+      taxRow('TVQ (9,975 %)', x.tvq + ' $');
+      if (parseFloat(x.pourboire) > 0) taxRow('Pourboire', x.pourboire + ' $');
+      doc.setFillColor(...GOLD);
+      doc.roundedRect(margin, y - 3, W - margin*2, 7, 1, 1, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica','bold');
+      doc.setTextColor(...NAVY); doc.text('Total remboursable', margin + 4, y + 1.5);
+      doc.text(fmtCAD(parseFloat(x.montant)), W - margin - 2, y + 1.5, { align: 'right' });
+      y += 10;
+
+      // Photos
+      if (avecPhotos) {
+        const thumbs = Object.entries(photoStore).filter(([k]) => k.startsWith('repas_' + (i+1) + '_'));
+        if (thumbs.length) {
+          checkPage(40);
+          doc.setTextColor(...DGREY); doc.setFontSize(7); doc.setFont('helvetica','italic');
+          doc.text('Photos de facture :', margin + 3, y);
+          y += 4;
+          let px = margin + 3;
+          for (const [, file] of thumbs) {
+            try {
+              const b64 = await fileToBase64(file);
+              const fmt = file.type === 'image/png' ? 'PNG' : 'JPEG';
+              checkPage(42);
+              doc.addImage(b64, fmt, px, y, 35, 35);
+              px += 38;
+              if (px > W - margin - 35) { px = margin + 3; y += 38; }
+            } catch(e) {}
+          }
+          y += 40;
+        }
+      }
+      hLine(y); y += 4;
+    }
+    totalRow('Sous-total repas', fmtCAD(data.repas.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    y += 4;
+  }
+
+  // ══ MATÉRIAUX ═══════════════════════════════════════════════════
+  if (data.mats.length) {
+    sectionHeader('Matériaux, Location & Projet');
+    data.mats.forEach((x, i) => {
+      checkPage(28);
+      doc.setFillColor(248, 247, 244);
+      doc.roundedRect(margin, y - 3, W - margin*2, 25, 1.5, 1.5, 'F');
+      labelVal('Date :', x.date,       margin+3, margin+16, y+2);
+      labelVal('Fournisseur :', x.fourn, margin+3, margin+26, y+7);
+      labelVal('Projet :', x.projet,   margin+3, margin+20, y+12);
+      labelVal('Type :', x.type,       margin+3, margin+16, y+17);
+      doc.setTextColor(...[180,130,40]); doc.setFontSize(10); doc.setFont('helvetica','bold');
+      doc.text(fmtCAD(parseFloat(x.montant)), W - margin - 2, y + 10, { align: 'right' });
+      y += 28; hLine(y - 3);
+    });
+    totalRow('Sous-total matériaux', fmtCAD(data.mats.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    y += 4;
+  }
+
+  // ══ AUTRES ══════════════════════════════════════════════════════
+  if (data.autres.length) {
+    sectionHeader('Autres dépenses');
+    for (let i = 0; i < data.autres.length; i++) {
+      const x = data.autres[i];
+      checkPage(36);
+      doc.setFillColor(248, 247, 244);
+      doc.roundedRect(margin, y - 3, W - margin*2, 33, 1.5, 1.5, 'F');
+      labelVal('Date :', x.date,         margin+3, margin+16, y+2);
+      labelVal('Entreprise :', x.ent,    margin+3, margin+24, y+7);
+      labelVal('Projet :', x.projet,     margin+3, margin+18, y+12);
+      doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50); doc.setFontSize(7);
+      const lines = doc.splitTextToSize(x.justif || '—', W - margin*2 - 6);
+      doc.text(lines, margin + 3, y + 17);
+      y += 20;
+      taxRow('Montant avant taxes', x.avant + ' $');
+      taxRow('TPS (5 %)', x.tps + ' $');
+      taxRow('TVQ (9,975 %)', x.tvq + ' $');
+      doc.setFillColor(...GOLD);
+      doc.roundedRect(margin, y - 3, W - margin*2, 7, 1, 1, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica','bold');
+      doc.setTextColor(...NAVY); doc.text('Total TTC', margin + 4, y + 1.5);
+      doc.text(fmtCAD(parseFloat(x.montant)), W - margin - 2, y + 1.5, { align: 'right' });
+      y += 10;
+
+      if (avecPhotos) {
+        const thumbs = Object.entries(photoStore).filter(([k]) => k.startsWith('autre_' + (i+1) + '_'));
+        if (thumbs.length) {
+          checkPage(40); let px = margin + 3;
+          doc.setTextColor(...DGREY); doc.setFontSize(7); doc.setFont('helvetica','italic');
+          doc.text('Photos de facture :', margin + 3, y); y += 4;
+          for (const [, file] of thumbs) {
+            try {
+              const b64 = await fileToBase64(file);
+              const fmt = file.type === 'image/png' ? 'PNG' : 'JPEG';
+              checkPage(42);
+              doc.addImage(b64, fmt, px, y, 35, 35);
+              px += 38;
+              if (px > W - margin - 35) { px = margin + 3; y += 38; }
+            } catch(e) {}
+          }
+          y += 40;
+        }
+      }
+      hLine(y); y += 4;
+    }
+    totalRow('Sous-total autres', fmtCAD(data.autres.reduce((s,x)=>s+parseFloat(x.montant),0)));
+    y += 4;
+  }
+
+  // ══ TOTAL GÉNÉRAL ═══════════════════════════════════════════════
+  checkPage(20);
+  doc.setFillColor(...NAVY);
+  doc.roundedRect(margin, y, W - margin*2, 14, 2, 2, 'F');
+  doc.setTextColor(...GOLD); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('TOTAL À REMBOURSER', margin + 4, y + 9);
+  doc.setFontSize(13);
+  doc.text(fmtCAD(grand), W - margin - 2, y + 9, { align: 'right' });
+  y += 20;
+
+  // ══ PIED DE PAGE ════════════════════════════════════════════════
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 272, W, 15, 'F');
+    doc.setTextColor(...DGREY); doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text('Construction Roger Mercier Inc.  •  info@constructionrm.ca', W/2, 279, { align: 'center' });
+    doc.text(`Page ${p} / ${pageCount}`, W - margin, 279, { align: 'right' });
+  }
+
+  const suffix = avecPhotos ? 'avec-photos' : 'sans-photos';
+  const nomFichier = `rapport-depenses-${employe.replace(/\s+/g,'-').toLowerCase()}-${dateRapport}-${suffix}.pdf`;
+  doc.save(nomFichier);
+  toast(`✓ PDF ${avecPhotos ? 'avec photos' : 'sans photos'} téléchargé !`, 'success');
+}
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type||'') + ' show';
+  setTimeout(() => { t.className = 'toast ' + (type||''); }, 3500);
+}
+
+// ── Calendrier custom ───────────────────────────────────────────
+const CAL_MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const CAL_JOURS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const calState = {}; // { inputId: { year, month, view:'days'|'months'|'years', yearPage } }
+
+function calOpen(inputId) {
+  // Fermer tous les autres calendriers
+  document.querySelectorAll('.cal-popup.open').forEach(p => {
+    if (p.id !== 'cal_' + inputId) p.classList.remove('open');
+  });
+  const popup = document.getElementById('cal_' + inputId);
+  if (!popup) return;
+  if (popup.classList.contains('open')) { popup.classList.remove('open'); return; }
+
+  const today = new Date();
+  // Lire la valeur déjà saisie si présente
+  const inp = document.getElementById(inputId);
+  let year = today.getFullYear(), month = today.getMonth();
+  if (inp && inp.dataset.isoDate) {
+    const d = new Date(inp.dataset.isoDate);
+    year = d.getFullYear(); month = d.getMonth();
+  }
+  calState[inputId] = { year, month, view: 'days', yearPage: Math.floor(year / 12) * 12 };
+  calRender(inputId);
+  popup.classList.add('open');
+}
+
+function calRender(inputId) {
+  const popup = document.getElementById('cal_' + inputId);
+  const s = calState[inputId];
+  if (s.view === 'days')   { popup.innerHTML = calDaysHTML(inputId); }
+  if (s.view === 'months') { popup.innerHTML = calMonthsHTML(inputId); }
+  if (s.view === 'years')  { popup.innerHTML = calYearsHTML(inputId); }
+}
+
+function calDaysHTML(inputId) {
+  const s = calState[inputId];
+  const today = new Date();
+  const sel = document.getElementById(inputId)?.dataset?.isoDate || '';
+  const firstDay = new Date(s.year, s.month, 1).getDay();
+  const daysInMonth = new Date(s.year, s.month + 1, 0).getDate();
+
+  let html = `
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calPrevMonth('${inputId}')">&#8249;</button>
+      <span class="cal-month-label" onclick="calSetView('${inputId}','months')">${CAL_MOIS[s.month]} ${s.year}</span>
+      <button class="cal-nav" onclick="calNextMonth('${inputId}')">&#8250;</button>
+    </div>
+    <div class="cal-grid">`;
+
+  CAL_JOURS.forEach(j => { html += `<div class="cal-dow">${j}</div>`; });
+
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso  = `${s.year}-${String(s.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = iso === `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const isSel   = iso === sel;
+    let cls = 'cal-day';
+    if (isToday) cls += ' today';
+    if (isSel)   cls += ' selected';
+    html += `<div class="${cls}" onclick="calSelect('${inputId}','${iso}')">${d}</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function calMonthsHTML(inputId) {
+  const s = calState[inputId];
+  let html = `
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calPrevYear('${inputId}')">&#8249;</button>
+      <span class="cal-month-label" onclick="calSetView('${inputId}','years')">${s.year}</span>
+      <button class="cal-nav" onclick="calNextYear('${inputId}')">&#8250;</button>
+    </div>
+    <div class="cal-ym-grid">`;
+  CAL_MOIS.forEach((m, i) => {
+    const active = i === s.month ? ' active' : '';
+    html += `<div class="cal-ym-item${active}" onclick="calPickMonth('${inputId}',${i})">${m.slice(0,3)}</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function calYearsHTML(inputId) {
+  const s = calState[inputId];
+  const start = s.yearPage;
+  let html = `
+    <div class="cal-year-nav">
+      <button class="cal-nav" onclick="calPrevYearPage('${inputId}')">&#8249;</button>
+      <span class="cal-year-label">${start} – ${start+11}</span>
+      <button class="cal-nav" onclick="calNextYearPage('${inputId}')">&#8250;</button>
+    </div>
+    <div class="cal-ym-grid">`;
+  for (let y = start; y < start + 12; y++) {
+    const active = y === s.year ? ' active' : '';
+    html += `<div class="cal-ym-item${active}" onclick="calPickYear('${inputId}',${y})">${y}</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+// Navigation
+function calPrevMonth(id)  { const s=calState[id]; s.month--; if(s.month<0){s.month=11;s.year--;} calRender(id); }
+function calNextMonth(id)  { const s=calState[id]; s.month++; if(s.month>11){s.month=0;s.year++;} calRender(id); }
+function calPrevYear(id)   { calState[id].year--;  calRender(id); }
+function calNextYear(id)   { calState[id].year++;  calRender(id); }
+function calPrevYearPage(id) { calState[id].yearPage -= 12; calRender(id); }
+function calNextYearPage(id) { calState[id].yearPage += 12; calRender(id); }
+function calSetView(id, v) { calState[id].view = v; calRender(id); }
+function calPickMonth(id, m) { calState[id].month = m; calState[id].view = 'days'; calRender(id); }
+function calPickYear(id, y)  { calState[id].year = y; calState[id].yearPage = Math.floor(y/12)*12; calState[id].view = 'months'; calRender(id); }
+
+function calSelect(inputId, iso) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.dataset.isoDate = iso;
+  // Affichage en français : JJ mois AAAA
+  const [y, m, d] = iso.split('-').map(Number);
+  inp.value = `${String(d).padStart(2,'0')} ${CAL_MOIS[m-1]} ${y}`;
+  document.getElementById('cal_' + inputId).classList.remove('open');
+}
+
+// Fermer calendrier si clic extérieur
+document.addEventListener('click', e => {
+  if (!e.target.closest('.datepicker-wrap')) {
+    document.querySelectorAll('.cal-popup.open').forEach(p => p.classList.remove('open'));
+  }
+});
+
+// Valeur récupérée depuis dataset pour envoi (format YYYY-MM-DD)
+function getDateVal(inputId) {
+  const inp = document.getElementById(inputId);
+  return inp?.dataset?.isoDate || inp?.value || '';
+}
+
+// Init date aujourd'hui
+(function() {
+  const today = new Date();
+  const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  calSelect('dateRapport', iso);
+})();
+</script>
+</body>
+</html>
